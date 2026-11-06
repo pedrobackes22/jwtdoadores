@@ -1,0 +1,13 @@
+import { Router } from "express";
+import * as controller from "../controllers/alimentosController.js";
+import autenticarToken from "../middlewares/autenticarToken.js";
+import autorizarTipo from "../middlewares/autorizarTipo.js";
+const router = Router();
+router.use(autenticarToken);
+router.get("/", controller.listar);
+router.get("/meus", autorizarTipo("DOADOR"), controller.meus);
+router.get("/:id", controller.detalhes);
+router.post("/", autorizarTipo("DOADOR"), controller.criar);
+router.put("/:id", autorizarTipo("DOADOR"), controller.editar);
+router.delete("/:id", autorizarTipo("DOADOR"), controller.excluir);
+export default router;

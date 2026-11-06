@@ -1,0 +1,14 @@
+node_modules/
+.expo/
+dist/
+web-build/
+.env
+backend/.env
+*.log
+.tools/
+.mysql-validation/
+test-results/
+playwright-report/
+*.apk
+*.aab
+referencias/

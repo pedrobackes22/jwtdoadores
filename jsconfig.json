@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "target": "es2022",
+    "skipLibCheck": true
+  },
+  "include": [
+    "App.js",
+    "index.js",
+    "components/**/*.js",
+    "contexts/**/*.js",
+    "hooks/**/*.js",
+    "navigation/**/*.js",
+    "screens/**/*.js",
+    "services/**/*.js",
+    "shared/**/*.js",
+    "backend/**/*.js",
+    "scripts/**/*.js",
+    "tests/**/*.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "referencias",
+    ".tools",
+    ".mysql-validation",
+    "dist"
+  ]
+}

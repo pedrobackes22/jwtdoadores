@@ -1,4 +1,37 @@
-# Validação — 06/11/2026
+# Validação atual — 10/11/2026
+
+| Comando / verificação final | Aprovados | Falhas | Resultado e limite |
+| --- | --- | --- | --- |
+| `npm.cmd test` | 8 | 0 | Três regras + cinco testes do cliente: URL, JSON/Bearer, HTTP, sessão, rede e timeout. |
+| `npm.cmd run test:mysql` | 14 | 0 | Cenário-pai + 13 subtestes com MySQL real isolado, incluindo matriz de papéis. |
+| `npm.cmd run test:web` | 15 | 0 | Os 14 anteriores + fluxo Edge entre origens: cadastro, login inválido/válido, publicação, pedido, aprovação, endereço, entrega e logout. |
+| `node scripts/verificar-expo-web.js` | Smoke concluído | 0 | Expo localhost:8081 → API localhost:3000/api; erros 401/400 na tela, sem gravar registros pessoais e sem erros de página. |
+| `npm.cmd run lint` | Concluído | 0 | Sem avisos na execução final. |
+| `npm.cmd run typecheck` | Concluído | 0 | Verificação sintática/estrutural, `checkJs=false`. |
+| `npx.cmd expo install --check` | Concluído | 0 | Dependências compatíveis segundo Expo instalado. |
+| `npm.cmd run api:dev` | Iniciou | 0 | Porta 3000, MySQL pessoal conectado; health 200. |
+| `npx.cmd expo start --web --clear --port 8081` | Iniciou | 0 | `.env` raiz carregado; interface exercitada pelo smoke. |
+| `npm.cmd run export:android` | Bundle gerado | 0 | Bundle Hermes; não equivale a APK gerado/instalado. |
+| `git diff --check` | Concluído | 0 | Sem erros de whitespace. |
+| `npm.cmd audit --omit=dev --json` | Não limpo | 5 moderados | Zero high/critical; cadeia glob/minimatch/Expo. Comando retorna código 1 pelos avisos. |
+
+As contagens de integração incluem o teste-pai e não são quantidades de ações de interface. As suítes MySQL e Web repetem cenários; não some as contagens como casos únicos. O banco pessoal não foi usado para criar contas de teste. As instâncias temporárias, dados e logs ficam em `.mysql-validation/`, sem DROP ou limpeza do banco pessoal.
+
+Os avisos de dependências permanecem: a correção sugerida pelo npm implica mudar a versão principal do Expo; não foi aplicado `audit fix --force`. Nenhuma atualização de dependências foi feita nesta auditoria.
+
+Falhas intermediárias corrigidas: execução de `npm.ps1` bloqueada pelo PowerShell (usado `npm.cmd`), criação de processos bloqueada no sandbox (testes executados com autorização apropriada), consulta de hash `LIMIT 1` dependente da ordem das contas (agora filtra pelo e-mail), captura de preflight automático não exposta pelo Playwright (OPTIONS validado diretamente via HTTP; navegador confirma acesso entre origens). A versão inicial dos novos testes Web falhou por essas duas suposições de teste; a execução final passou integralmente.
+
+Não foi reproduzida a falha original de transporte na configuração atual. O código foi corrigido para preservar diagnósticos e o caminho real de cadastro/login foi exercitado com MySQL isolado. O smoke do banco pessoal usou somente login inválido e cadastro inválido. Detalhes: [AUDITORIA_ENTREGAS.md](AUDITORIA_ENTREGAS.md).
+
+Pendentes: testes de SecureStore/retomada e interface em Android físico, build EAS, instalação e teste do APK, correspondência APK/remoto e apresentação do aluno. O teste de persistência reinicia a API e reconecta ao MySQL; não reinicia o serviço MySQL pessoal. A configuração Android usa HTTP para desenvolvimento; build final exige URL acessível ao aparelho. Não foi executado `expo-doctor` nesta auditoria.
+
+As capturas [doacoes.png](doacoes.png), [aprovacao.png](aprovacao.png) e [retirada.png](retirada.png) foram atualizadas pelo fluxo de 10/11. O export Android sobrescreve `dist`; antes de servir Web estático, refaça `npm run export:web` com a URL adequada. O Expo Web usa seu próprio servidor e continua lendo o `.env` raiz.
+
+---
+
+# Histórico — 06/11/2026
+
+Os resultados abaixo são registros anteriores, não evidência da execução atual. Informações sobre configuração local, autenticação EAS e auditoria de dependências podem ter mudado; use a tabela atual acima.
 
 Os resultados abaixo são desta implementação. Não foram copiados do projeto de referência.
 

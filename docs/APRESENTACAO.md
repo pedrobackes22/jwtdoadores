@@ -1,5 +1,7 @@
 # Roteiro de apresentação
 
+Roteiro ampliado e atualizado: [ROTEIRO_APRESENTACAO.md](ROTEIRO_APRESENTACAO.md).
+
 1. Explique o problema: desperdício de alimentos e dificuldade de conectar doadores a quem precisa receber.
 2. Mostre a proposta e os dois papéis. Explique por que o fluxo envolve solicitações e retirada.
 3. Abra o SQL: usuários têm ofertas e solicitações; a oferta pertence a um doador, o pedido a um receptor.

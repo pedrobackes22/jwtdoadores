@@ -113,6 +113,73 @@ test(
         tipo_usuario: tipo,
       });
       await t.test(
+        "preflight de cadastro/login e rotas protegidas não exige autenticação",
+        async () => {
+          for (const caminho of [
+            "/auth/cadastro",
+            "/auth/login",
+            "/alimentos",
+          ]) {
+            const r = await fetch(baseApi + caminho, {
+              method: "OPTIONS",
+              headers: {
+                Origin: "http://localhost:8081",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type,authorization",
+              },
+            });
+            assert.equal(r.status, 204);
+            assert.equal(r.headers.get("access-control-allow-origin"), "*");
+            assert.match(
+              r.headers.get("access-control-allow-headers"),
+              /authorization/i,
+            );
+            assert.match(r.headers.get("access-control-allow-methods"), /POST/);
+          }
+        },
+      );
+      await t.test(
+        "senha mantém espaços e rejeita excesso de bytes; JSON inválido retorna 400",
+        async () => {
+          const usuario = {
+            ...conta("Espacos", "RECEPTOR"),
+            senha: "  senha de teste  ",
+          };
+          assert.equal(
+            (await req("/auth/cadastro", null, "POST", usuario)).status,
+            201,
+          );
+          assert.equal(
+            (await req("/auth/login", null, "POST", usuario)).status,
+            200,
+          );
+          assert.equal(
+            (
+              await req("/auth/login", null, "POST", {
+                ...usuario,
+                senha: usuario.senha.trim(),
+              })
+            ).status,
+            401,
+          );
+          assert.equal(
+            (
+              await req("/auth/cadastro", null, "POST", {
+                ...usuario,
+                senha: "é".repeat(37),
+              })
+            ).status,
+            400,
+          );
+          const r = await fetch(baseApi + "/auth/cadastro", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: "{",
+          });
+          assert.equal(r.status, 400);
+        },
+      );
+      await t.test(
         "cadastro dos dois papéis, e-mail duplicado, hash e login",
         async () => {
           for (const [nome, tipo] of [
@@ -138,7 +205,7 @@ test(
             409,
           );
           const [u] = await db.query(
-            "SELECT senha_hash FROM alimenta_plus.usuarios LIMIT 1",
+            "SELECT senha_hash FROM alimenta_plus.usuarios WHERE email='doador@example.com'",
           );
           assert.ok(await bcrypt.compare(senha, u[0].senha_hash));
           assert.equal(
@@ -186,6 +253,30 @@ test(
           "DOADOR",
         );
       });
+      await t.test(
+        "matriz de papéis bloqueia acesso direto em todas as famílias de rotas",
+        async () => {
+          for (const [caminho, token, method] of [
+            ["/alimentos/meus", receptor.token, "GET"],
+            ["/alimentos/1", receptor.token, "PUT"],
+            ["/alimentos/1", receptor.token, "DELETE"],
+            ["/solicitacoes", doador.token, "POST"],
+            ["/solicitacoes/minhas", doador.token, "GET"],
+            ["/solicitacoes/recebidas", receptor.token, "GET"],
+            ["/solicitacoes/1/aprovar", receptor.token, "PATCH"],
+            ["/solicitacoes/1/recusar", receptor.token, "PATCH"],
+            ["/solicitacoes/1/entregar", receptor.token, "PATCH"],
+            ["/solicitacoes/1/cancelar", doador.token, "PATCH"],
+          ])
+            assert.equal(
+              (await req(caminho, token, method)).status,
+              403,
+              caminho,
+            );
+          for (const caminho of ["/alimentos", "/solicitacoes", "/auth/me"])
+            assert.equal((await req(caminho)).status, 401, caminho);
+        },
+      );
       const oferta = {
         nome: "Arroz integral",
         descricao: "Pacotes fechados",

@@ -6,7 +6,7 @@ Aplicativo escolar em JavaScript, React Native e Expo que conecta pessoas e esta
 
 ## Referências e adaptação
 
-O ZIP `Downloads/loja-jwt.zip` foi extraído em `referencias/loja-jwt` para análise, sem modificar o original. Foram examinados o aplicativo, telas, componentes, serviços, API, SQL, testes e documentação. Também foi lido o PDF `Projeto Avaliativo Aplicacao Mobile JWT.pdf`. A análise e a correspondência com as quatro entregas estão em [docs/ENTREGAS.md](docs/ENTREGAS.md).
+Auditoria atual: 10/11/2026. Foi examinada a referência extraída em `referencias/loja-jwt` e lido integralmente o PDF de oito páginas `Downloads/Projeto Avaliativo Aplicacao Mobile JWT.pdf`. Os arquivos com sufixos `(3)` e `(4)` citados no pedido não foram encontrados; não foi comprovada equivalência entre versões. A matriz completa, os problemas e resultados estão em [docs/AUDITORIA_ENTREGAS.md](docs/AUDITORIA_ENTREGAS.md).
 
 Mantidos: JavaScript, Expo Blank com `App.js`, Native Stack, `fetch`, ES Modules, Express, mysql2/promise sem ORM, bcrypt, JWT e papel atual consultado no banco. Adaptados: produtos viraram ofertas com validade e retirada; administração virou propriedade das ofertas; foram acrescentados Context API, SecureStore, abas e solicitações com estoque transacional. Não foram reutilizados usuários, credenciais, catálogo ou resultados de testes do exemplo.
 
@@ -55,7 +55,13 @@ O servidor valida configuração e conexão antes de escutar. Não coloque o seg
 
 ## API e celular
 
-Descubra o IPv4 da conexão Wi-Fi com `ipconfig`. No `.env` da raiz, configure o IP do computador:
+Para o navegador no próprio computador, mantenha no `.env` da raiz:
+
+```dotenv
+EXPO_PUBLIC_API_URL=http://localhost:3000/api
+```
+
+Para celular físico, descubra o IPv4 da conexão Wi-Fi com `ipconfig` e configure:
 
 ```dotenv
 EXPO_PUBLIC_API_URL=http://192.168.1.100:3000/api
@@ -74,6 +80,18 @@ Segundo terminal, na raiz:
 ```powershell
 npm start -- --clear
 ```
+
+Para o navegador, execute `npx expo start --web --clear`. No PowerShell com execução de scripts bloqueada, use `npm.cmd` e `npx.cmd`, sem precisar alterar a política do Windows.
+
+O Expo lê o `.env` da raiz e incorpora `EXPO_PUBLIC_API_URL` ao bundle. A API lê exclusivamente `backend/.env` por caminho absoluto, preservando variáveis já definidas no processo. Alterar o `.env` exige reiniciar o processo correspondente. Não escreva URLs em formato Markdown. O cliente valida protocolo HTTP/HTTPS, ausência de credenciais e prefixo `/api`. Na ausência da variável, Web/iOS usam localhost e Android usa `10.0.2.2` (emulador); aparelhos físicos exigem configuração explícita.
+
+### Diagnóstico de cadastro e login
+
+`GET http://localhost:3000/api/health` verifica se a API responde; não valida cadastro. As rotas públicas reais são `POST /api/auth/cadastro` e `POST /api/auth/login`, com JSON e `publica: true`. O middleware `cors()` está antes das rotas e responde OPTIONS sem exigir token; aceita origens diferentes para o desenvolvimento local. CORS não substitui autenticação.
+
+O cliente preserva erros 400 (dados), 401 público (credenciais), 403 (permissão), 409 (duplicação/conflito) e 429 (limite). Um 401 protegido remove a sessão; erros 500 têm mensagem sem detalhes internos. Timeout, configuração inválida, resposta não JSON e armazenamento possuem diagnósticos próprios. O navegador oculta a diferença entre falha de rede e CORS do JavaScript: nesse caso a mensagem informa ambas as possibilidades. Consulte Network/Console para distinguir conexão recusada, bloqueio CORS ou conteúdo misto HTTPS/HTTP. Logs de desenvolvimento contêm somente origem, método, status e código, sem corpo, senha ou token.
+
+O teste `node scripts/verificar-expo-web.js` requer API em 3000, Expo Web em 8081 e Edge. Confere URL real e mensagens usando entradas inválidas, sem criar registros no banco pessoal. Cadastro válido é testado com MySQL isolado por `npm run test:web`.
 
 Abra o Expo Go e leia o QR code. Permita Node na rede privada do Firewall do Windows. O backend escuta em `0.0.0.0:3000`. Confirme pelo navegador do celular: `http://IP-DO-PC:3000/api/health`. Esse endpoint informa apenas se a API responde; a conexão é verificada na inicialização e nas operações reais. Após mudar o `.env`, reinicie o Expo.
 
@@ -164,7 +182,7 @@ $env:MYSQLD_PATH='C:/caminho/do/mysql/bin/mysqld.exe'
 npm run test:mysql
 ```
 
-`npm run test:web` exporta a versão Web e executa os testes reais com Edge headless, sem simular API nem banco. Requer Edge instalado e porta 3011 livre. Capturas são salvas em `docs/`. A URL 127.0.0.1:3011 existe somente nesse export de teste, não altera seu `.env`. Confira [docs/TESTES.md](docs/TESTES.md) para resultados e verificações manuais nativas.
+`npm run test:web` exporta a versão Web e executa cadastro, login, publicação, solicitação, aprovação, entrega e logout com Edge headless, API e MySQL reais. Requer Edge instalado e portas 3011 (API) e 3012 (interface) livres, verificando CORS entre origens. Capturas são salvas em `docs/`. A URL de teste não altera seu `.env`. O export em `dist` recebe a URL de teste; para distribuição, refaça o export com a URL definitiva. Resultados atuais estão em [docs/AUDITORIA_ENTREGAS.md](docs/AUDITORIA_ENTREGAS.md).
 
 ## APK
 
@@ -181,4 +199,4 @@ Após o build, baixe o APK pela URL fornecida pelo EAS, instale no aparelho e re
 
 ## Entregas e Git
 
-Os arquivos e critérios estão organizados em [docs/ENTREGAS.md](docs/ENTREGAS.md), com roteiro em [docs/APRESENTACAO.md](docs/APRESENTACAO.md). Nenhum histórico incremental foi inventado, nenhum push foi executado e não há remoto configurado por esta implementação. O PDF exige repositório atualizado a cada entrega; envie somente com sua autorização e com commits que correspondam ao trabalho real. Nunca versione `.env`, segredos ou `node_modules`.
+Os arquivos e critérios estão em [docs/AUDITORIA_ENTREGAS.md](docs/AUDITORIA_ENTREGAS.md), com roteiro em [docs/ROTEIRO_APRESENTACAO.md](docs/ROTEIRO_APRESENTACAO.md). Existe Git local com quatro commits anteriores e remoto `origin` configurado. A versão remota não foi conferida e nenhum commit ou push foi feito nesta auditoria. O PDF exige commit e push antes de cada entrega; essa etapa permanece pendente de autorização. Nunca versione `.env`, segredos ou `node_modules`. APK configurado em `eas.json`, mas não gerado nesta auditoria.

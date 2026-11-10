@@ -74,7 +74,11 @@ export default function CadastroUsuario({ navigation }) {
                 value={form[campo]}
                 onChangeText={(v) => mudar(campo, v)}
                 senha={campo === "senha" || campo === "confirmar"}
-                autoCapitalize={campo === "email" ? "none" : "sentences"}
+                autoCapitalize={
+                  ["email", "senha", "confirmar"].includes(campo)
+                    ? "none"
+                    : "sentences"
+                }
                 keyboardType={
                   campo === "email"
                     ? "email-address"

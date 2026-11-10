@@ -3,13 +3,18 @@ import express from "express";
 import { resolve } from "node:path";
 export async function validarInterface({ app, senha }) {
   const web = express();
-  web.use("/api", function (req, res, next) {
-    req.url = "/api" + req.url;
-    app(req, res, next);
-  });
   web.use(express.static(resolve("dist")));
-  const http = web.listen(3011, "127.0.0.1");
-  await new Promise((r) => http.once("listening", r));
+  const http = web.listen(3012, "127.0.0.1");
+  const apiHttp = app.listen(3011, "127.0.0.1");
+  await Promise.all(
+    [http, apiHttp].map(
+      (s) =>
+        new Promise((r, j) => {
+          s.once("listening", r);
+          s.once("error", j);
+        }),
+    ),
+  );
   let browser;
   try {
     browser = await chromium.launch({ channel: "msedge", headless: true });
@@ -18,7 +23,12 @@ export async function validarInterface({ app, senha }) {
     });
     const erros = [];
     page.on("pageerror", (e) => erros.push(e.message));
-    await page.goto("http://127.0.0.1:3011");
+    const respostasApi = [];
+    page.on("response", (r) => {
+      if (r.url().startsWith("http://127.0.0.1:3011/api/"))
+        respostasApi.push(r.status());
+    });
+    await page.goto("http://127.0.0.1:3012");
     function campo(rotulo) {
       return page.getByLabel(rotulo, { exact: true }).filter({ visible: true });
     }
@@ -43,7 +53,27 @@ export async function validarInterface({ app, senha }) {
         page.getByRole("button", { name: "Entrar", exact: true }),
       ).toBeVisible();
     }
-    await entrar("doador");
+    // Cadastro pela interface, sem mock de fetch: valida JSON, rota pública e CORS.
+    await botao("Não tem conta? Cadastre-se");
+    await botao("DOADOR");
+    for (const [rotulo, valor] of [
+      ["Nome ou estabelecimento", "Doador visual"],
+      ["E-mail", "doadorvisual@example.com"],
+      ["Telefone com DDD", "11999999999"],
+      ["Senha", senha],
+      ["Confirmar senha", senha],
+    ])
+      await campo(rotulo).fill(valor);
+    await botao("Criar conta");
+    await expect(
+      page.getByText("Conta criada! Entre para começar."),
+    ).toBeVisible();
+    await botao("Ir para login");
+    await campo("E-mail").fill("doadorvisual@example.com");
+    await campo("Senha").fill("senha-incorreta");
+    await botao("Entrar");
+    await expect(page.getByText("E-mail ou senha incorretos.")).toBeVisible();
+    await entrar("doadorvisual");
     await page.getByRole("tab", { name: /Doações/ }).click();
     await botao("Cadastrar alimento");
     for (const [r, v] of [
@@ -81,7 +111,7 @@ export async function validarInterface({ app, senha }) {
     await botao("Voltar ao catálogo");
     await page.getByRole("tab", { name: /Perfil/ }).click();
     await botao("Sair da conta");
-    await entrar("doador");
+    await entrar("doadorvisual");
     await page.getByRole("tab", { name: /Solicitações/ }).click();
     const card = page
       .getByText("Maçãs do fluxo visual", { exact: true })
@@ -98,9 +128,27 @@ export async function validarInterface({ app, senha }) {
       page.getByText("Retirada: Rua visual, 42", { exact: true }),
     ).toBeVisible();
     await page.screenshot({ path: "docs/retirada.png", fullPage: true });
+    await sair();
+    await entrar("doadorvisual");
+    await page.getByRole("tab", { name: /Solicitações/ }).click();
+    const entrega = page
+      .getByText("Maçãs do fluxo visual", { exact: true })
+      .locator("..");
+    await entrega
+      .getByRole("button", { name: "Marcar como entregue", exact: true })
+      .click();
+    await botao("Confirmar");
+    await expect(entrega.getByText("Entregue", { exact: true })).toBeVisible();
+    await sair();
+    // O Playwright não expõe preflights automáticos como respostas de página.
+    // OPTIONS é validado na suíte HTTP; aqui validamos o acesso entre origens.
+    expect(respostasApi).toContain(201);
+    expect(respostasApi).toContain(401);
+    expect(new URL(page.url()).port).toBe("3012");
     expect(erros).toEqual([]);
   } finally {
     if (browser) await browser.close();
     await new Promise((r) => http.close(r));
+    await new Promise((r) => apiHttp.close(r));
   }
 }

@@ -32,7 +32,7 @@
     "web": "expo start --web",
     "api": "node backend/server.js",
     "api:dev": "node --watch backend/server.js",
-    "test": "node --test backend/tests/regras.test.js",
+    "test": "node --test backend/tests/regras.test.js tests/clienteApi.test.js",
     "test:mysql": "node scripts/testar-mysql.js",
     "test:web": "node scripts/testar-web.js",
     "lint": "eslint App.js index.js components contexts hooks navigation screens services shared backend scripts tests",

@@ -12,6 +12,8 @@ Mantidos: JavaScript, Expo Blank com `App.js`, Native Stack, `fetch`, ES Modules
 
 ## Funcionalidades e permissões
 
+Publicação e edição usam calendário compartilhado entre Expo Web e Android, com data exibida em `DD/MM/AAAA` e enviada como `AAAA-MM-DD`. A validade pode ser hoje; aplicativo e API usam o dia civil de Brasília (`America/Sao_Paulo`), sem converter a data selecionada para UTC. Dias anteriores ficam desabilitados. Unidade é escolhida entre `kg`, `g`, `unidades`, `litros` e `pacotes`; quantidade deve ser positiva e ter até três casas decimais (vírgula é convertida para ponto). As mesmas unidades são verificadas na API. Dados antigos não são alterados; se uma oferta antiga tiver outra unidade, o formulário pede uma opção válida, respeitando a regra já existente que impede mudar a unidade após haver solicitações.
+
 | Operação | Doador | Receptor |
 | --- | --- | --- |
 | Cadastro, login, perfil, logout | Sim | Sim |

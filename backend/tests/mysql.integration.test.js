@@ -7,6 +7,7 @@ import { resolve, join, dirname } from "node:path";
 import mysql from "mysql2/promise";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { hojeLocal } from "../../shared/datas.js";
 const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
 function iniciar(bin, args) {
   const filho = spawn(bin, args, {
@@ -353,6 +354,17 @@ test(
             ).status,
             400,
           );
+          for (const unidade of ["caixas", "KG", ""]) {
+            assert.equal(
+              (
+                await req("/alimentos", doador.token, "POST", {
+                  ...oferta,
+                  unidade,
+                })
+              ).status,
+              400,
+            );
+          }
         },
       );
       await t.test(
@@ -602,9 +614,34 @@ test(
         await t.test(
           "interface web real: doação até aprovação e logout",
           async () => {
-            await (
+            const { validadeEditada } = await (
               await import("../../tests/fluxo-web.js")
-            ).validarInterface({ app, servidor, doador, receptor, senha });
+            ).validarInterface({
+              app,
+              senha,
+              verificarPublicacao: async () => {
+                const [publicados] = await db.execute(
+                  "SELECT DATE_FORMAT(data_validade,'%Y-%m-%d') validade, unidade, quantidade FROM alimenta_plus.alimentos WHERE nome=?",
+                  ["Maçãs do fluxo visual"],
+                );
+                assert.equal(publicados.length, 1);
+                assert.equal(publicados[0].validade, hojeLocal());
+                assert.equal(publicados[0].unidade, "kg");
+                assert.equal(Number(publicados[0].quantidade), 4);
+              },
+            });
+            const [salvos] = await db.execute(
+              "SELECT DATE_FORMAT(data_validade,'%Y-%m-%d') validade, unidade, quantidade, descricao FROM alimenta_plus.alimentos WHERE nome=?",
+              ["Maçãs do fluxo visual"],
+            );
+            assert.equal(salvos.length, 1);
+            assert.equal(salvos[0].validade, validadeEditada);
+            assert.equal(salvos[0].unidade, "kg");
+            assert.equal(Number(salvos[0].quantidade), 4);
+            assert.equal(
+              salvos[0].descricao,
+              "Validade e unidade verificadas na edição",
+            );
           },
         );
       await writeFile(

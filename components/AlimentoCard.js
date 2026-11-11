@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { View, Text, Image } from "react-native";
 import { Painel, Botao, estilos, cores, dataBR } from "./ui.js";
+import { hojeLocal } from "../shared/datas.js";
 export default function AlimentoCard({ alimento, onDetalhes, children }) {
   const [falhou, setFalhou] = useState(false);
   const disponivel =
     Number(alimento.disponivel) > 0 &&
     alimento.status === "ATIVO" &&
-    alimento.data_validade >= new Date().toLocaleDateString("en-CA");
+    alimento.data_validade >= hojeLocal();
   return (
     <Painel>
       {alimento.imagem_url && !falhou ? (

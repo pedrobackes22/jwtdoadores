@@ -1,4 +1,5 @@
-import { CATEGORIAS } from "../../shared/constants.js";
+import { CATEGORIAS, UNIDADES } from "../../shared/constants.js";
+import { hojeLocal, dataReal } from "../../shared/datas.js";
 export function falhar(status, mensagem) {
   throw Object.assign(new Error(mensagem), { status });
 }
@@ -33,12 +34,7 @@ export function quantidade(valor) {
   return Number(valor);
 }
 export function hoje() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Sao_Paulo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  return hojeLocal();
 }
 export function validarAlimento(body) {
   const a = {};
@@ -54,15 +50,14 @@ export function validarAlimento(body) {
   for (const campo of ["descricao", "informacoes_adicionais"])
     a[campo] = texto(body[campo], campo, 4000, false);
   if (!CATEGORIAS.includes(a.categoria)) falhar(400, "Categoria inválida.");
+  if (!UNIDADES.includes(a.unidade))
+    falhar(
+      400,
+      "Selecione uma unidade válida: kg, g, unidades, litros ou pacotes.",
+    );
   a.quantidade = quantidade(body.quantidade);
   a.data_validade = texto(body.data_validade, "Data de validade", 10);
-  const data = new Date(a.data_validade + "T12:00:00Z");
-  if (
-    !/^\d{4}-\d{2}-\d{2}$/.test(a.data_validade) ||
-    Number.isNaN(data.getTime()) ||
-    data.toISOString().slice(0, 10) !== a.data_validade ||
-    a.data_validade < hoje()
-  )
+  if (!dataReal(a.data_validade) || a.data_validade < hoje())
     falhar(
       400,
       "Validade deve ser uma data real, hoje ou futura (AAAA-MM-DD).",

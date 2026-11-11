@@ -1,8 +1,12 @@
-# Validação atual — 10/11/2026
+# Validação atual — 11/11/2026
+
+Atualização do formulário: calendário React Native compartilhado Web/Android, exibição brasileira e envio ISO; unidade por opções fixas e quantidade positiva. `npm test` agora possui **9 aprovados**. O fluxo Web publica com validade de hoje, confere o registro diretamente no MySQL isolado, edita a validade pelo calendário para o mês seguinte e verifica os dados SQL e a exibição no receptor. Inclui rejeição de quantidade zero pela interface, unidades inválidas pela API e testes de virada do dia UTC/Brasília. O calendário não exige instalação de dependência nativa. Bundle Android exportado; interação em aparelho físico permanece não verificada. A primeira execução do teste novo encontrou ambiguidade entre texto de cartão e detalhes; o seletor foi corrigido para correspondência exata.
+
+Nesta atualização foram reexecutados `npm test`, `npm run lint`, `npm run typecheck`, `npm run test:web` e `npm run export:android`. Os outros comandos da tabela conservam os resultados da auditoria de 10/11; o teste Web executa também todos os cenários MySQL com banco isolado. Captura do calendário: [calendario.png](calendario.png). Em 11/11/2026, a data 10/11/2026 já está vencida e continua sendo rejeitada por regra de negócio.
 
 | Comando / verificação final | Aprovados | Falhas | Resultado e limite |
 | --- | --- | --- | --- |
-| `npm.cmd test` | 8 | 0 | Três regras + cinco testes do cliente: URL, JSON/Bearer, HTTP, sessão, rede e timeout. |
+| `npm.cmd test` | 9 | 0 | Quatro testes de regras/datas + cinco testes do cliente. |
 | `npm.cmd run test:mysql` | 14 | 0 | Cenário-pai + 13 subtestes com MySQL real isolado, incluindo matriz de papéis. |
 | `npm.cmd run test:web` | 15 | 0 | Os 14 anteriores + fluxo Edge entre origens: cadastro, login inválido/válido, publicação, pedido, aprovação, endereço, entrega e logout. |
 | `node scripts/verificar-expo-web.js` | Smoke concluído | 0 | Expo localhost:8081 → API localhost:3000/api; erros 401/400 na tela, sem gravar registros pessoais e sem erros de página. |

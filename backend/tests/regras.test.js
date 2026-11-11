@@ -1,5 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { hojeLocal, dataReal, dataBrasileira } from "../../shared/datas.js";
+import { UNIDADES } from "../../shared/constants.js";
 import {
   validarAlimento,
   quantidade,
@@ -36,12 +38,35 @@ test("validação de oferta exige data real e URL HTTPS opcional", function () {
     endereco_retirada: "Rua de teste, 12",
   };
   assert.equal(validarAlimento(a).quantidade, 5);
+  assert.equal(
+    validarAlimento({ ...a, data_validade: hoje() }).data_validade,
+    hoje(),
+  );
+  for (const unidade of UNIDADES)
+    assert.equal(validarAlimento({ ...a, unidade }).unidade, unidade);
+  for (const unidade of ["caixas", "", "KG", null])
+    assert.throws(() => validarAlimento({ ...a, unidade }));
+  assert.throws(() => validarAlimento({ ...a, data_validade: "10/11/2026" }));
   for (const data of ["2020-01-01", "2099-02-31", "invalida"])
     assert.throws(() => validarAlimento({ ...a, data_validade: data }));
   assert.throws(() =>
     validarAlimento({ ...a, imagem_url: "file:///foto.jpg" }),
   );
   assert.match(hoje(), /^\d{4}-\d{2}-\d{2}$/);
+});
+test("dia civil brasileiro não avança com UTC; calendário valida e formata sem deslocamento", () => {
+  assert.equal(hojeLocal(new Date("2026-11-12T01:30:00Z")), "2026-11-11");
+  assert.equal(hojeLocal(new Date("2026-11-12T03:00:00Z")), "2026-11-12");
+  assert.equal(dataBrasileira("2026-11-11"), "11/11/2026");
+  assert.ok(dataReal("2028-02-29"));
+  for (const data of [
+    "2026-02-29",
+    "2026-04-31",
+    "2026-13-01",
+    "11/11/2026",
+    "",
+  ])
+    assert.equal(dataReal(data), false);
 });
 test("oferta vencida, excluída ou saldo insuficiente não pode ser reservada", function () {
   const a = { status: "ATIVO", data_validade: "2099-01-01" };

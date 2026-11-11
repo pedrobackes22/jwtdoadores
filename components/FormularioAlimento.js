@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Text } from "react-native";
 import { api } from "../services/api.js";
-import { CATEGORIAS } from "../shared/constants.js";
+import { CATEGORIAS, UNIDADES } from "../shared/constants.js";
+import { dataReal, hojeLocal } from "../shared/datas.js";
+import SeletorData from "./SeletorData.js";
 import {
   Pagina,
   Painel,
@@ -63,11 +65,26 @@ export default function FormularioAlimento({ id, navigation }) {
     ])
       if (!form[campo].trim())
         return setErro("Preencha todos os campos obrigatórios.");
+    const quantidade = form.quantidade.replace(",", ".");
+    if (
+      !/^\d+(\.\d{1,3})?$/.test(quantidade) ||
+      Number(quantidade) <= 0 ||
+      Number(quantidade) > 9999999.999
+    )
+      return setErro(
+        "Informe uma quantidade maior que zero, com até 3 casas decimais.",
+      );
+    if (!UNIDADES.includes(form.unidade))
+      return setErro("Selecione uma unidade válida.");
+    if (!dataReal(form.data_validade) || form.data_validade < hojeLocal())
+      return setErro(
+        "Selecione uma validade real, hoje ou futura, no calendário.",
+      );
     setLoading(true);
     try {
       await api("/alimentos" + (id ? "/" + id : ""), {
         method: id ? "PUT" : "POST",
-        body: { ...form, quantidade: form.quantidade.replace(",", ".") },
+        body: { ...form, quantidade },
       });
       setSucesso(true);
     } catch (e) {
@@ -116,10 +133,24 @@ export default function FormularioAlimento({ id, navigation }) {
             valor={form.categoria}
             onChange={(v) => mudar("categoria", v)}
           />
+          <Text style={estilos.rotulo}>Unidade *</Text>
+          <Escolhas
+            valores={UNIDADES}
+            valor={form.unidade}
+            onChange={(v) => mudar("unidade", v)}
+          />
+          {form.unidade && !UNIDADES.includes(form.unidade) && (
+            <Text style={estilos.suave}>
+              Unidade anterior: {form.unidade}. Selecione uma das opções para
+              salvar.
+            </Text>
+          )}
+          <SeletorData
+            valor={form.data_validade}
+            onChange={(v) => mudar("data_validade", v)}
+          />
           {[
             ["quantidade", "Quantidade total *"],
-            ["unidade", "Unidade (kg, unidades, litros...) *"],
-            ["data_validade", "Validade (AAAA-MM-DD) *"],
             ["cidade", "Cidade *"],
             ["bairro", "Bairro *"],
             ["endereco_retirada", "Endereço completo de retirada *"],

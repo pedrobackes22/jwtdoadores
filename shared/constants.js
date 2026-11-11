@@ -1,3 +1,4 @@
+export const UNIDADES = ["kg", "g", "unidades", "litros", "pacotes"];
 export const CATEGORIAS = [
   "Frutas",
   "Verduras e legumes",

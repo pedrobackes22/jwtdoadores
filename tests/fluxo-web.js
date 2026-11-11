@@ -1,7 +1,8 @@
 import { chromium, expect } from "@playwright/test";
 import express from "express";
 import { resolve } from "node:path";
-export async function validarInterface({ app, senha }) {
+import { hojeLocal, dataBrasileira } from "../shared/datas.js";
+export async function validarInterface({ app, senha, verificarPublicacao }) {
   const web = express();
   web.use(express.static(resolve("dist")));
   const http = web.listen(3012, "127.0.0.1");
@@ -79,15 +80,52 @@ export async function validarInterface({ app, senha }) {
     for (const [r, v] of [
       ["Nome do alimento *", "Maçãs do fluxo visual"],
       ["Quantidade total *", "4"],
-      ["Validade (AAAA-MM-DD) *", "2099-12-31"],
       ["Cidade *", "São Paulo"],
       ["Bairro *", "Centro"],
       ["Endereço completo de retirada *", "Rua visual, 42"],
     ])
       await campo(r).fill(v);
+    await botao("Selecionar validade");
+    await page.screenshot({
+      path: "docs/calendario.png",
+      fullPage: true,
+      animations: "disabled",
+    });
+    await botao("Hoje");
+    await expect(
+      page.getByRole("button", {
+        name: "Validade: " + dataBrasileira(hojeLocal()),
+        exact: true,
+      }),
+    ).toBeVisible();
+    await campo("Quantidade total *").fill("0");
+    await botao("Publicar doação");
+    await expect(
+      page.getByText(
+        "Informe uma quantidade maior que zero, com até 3 casas decimais.",
+      ),
+    ).toBeVisible();
+    await campo("Quantidade total *").fill("4");
+    await botao("pacotes");
+    await botao("kg");
     await botao("Publicar doação");
     await expect(
       page.getByText("Doação publicada!", { exact: true }),
+    ).toBeVisible();
+    await verificarPublicacao();
+    await botao("Concluir");
+    // Edição reutiliza a data ISO recebida da API, mostrando o formato brasileiro.
+    await botao("Editar");
+    await botao("Validade: " + dataBrasileira(hojeLocal()));
+    await botao("›");
+    const [ano, mes] = hojeLocal().split("-").map(Number);
+    const proximo = new Date(ano, mes, 15, 12);
+    const validadeEditada = `${proximo.getFullYear()}-${String(proximo.getMonth() + 1).padStart(2, "0")}-15`;
+    await botao(dataBrasileira(validadeEditada));
+    await campo("Descrição").fill("Validade e unidade verificadas na edição");
+    await botao("Salvar alterações");
+    await expect(
+      page.getByText("Alterações salvas!", { exact: true }),
     ).toBeVisible();
     await botao("Concluir");
     await page.screenshot({ path: "docs/doacoes.png", fullPage: true });
@@ -97,6 +135,11 @@ export async function validarInterface({ app, senha }) {
       page.getByText("Maçãs do fluxo visual", { exact: true }),
     ).toBeVisible();
     await botao("Ver detalhes");
+    await expect(
+      page.getByText("Validade: " + dataBrasileira(validadeEditada), {
+        exact: true,
+      }),
+    ).toBeVisible();
     await expect(
       page.getByText("Liberado após a aprovação da solicitação.", {
         exact: false,
@@ -146,6 +189,7 @@ export async function validarInterface({ app, senha }) {
     expect(respostasApi).toContain(401);
     expect(new URL(page.url()).port).toBe("3012");
     expect(erros).toEqual([]);
+    return { validadeEditada };
   } finally {
     if (browser) await browser.close();
     await new Promise((r) => http.close(r));

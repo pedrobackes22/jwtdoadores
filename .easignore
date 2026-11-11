@@ -25,5 +25,10 @@ playwright-report/
 *.log
 *.apk
 *.aab
+backups/
+*.sql
+*.dump
+*.sql.gz
+*.sql.zip
 android/
 ios/

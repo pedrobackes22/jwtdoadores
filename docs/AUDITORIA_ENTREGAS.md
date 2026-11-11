@@ -1,4 +1,92 @@
-# Auditoria técnica e conformidade — Alimenta+
+# Revisão final das quatro entregas — 11/11/2026
+
+## Fontes e estado atual
+
+O PDF completo de oito páginas foi relido nesta revisão. Ele foi encontrado em Downloads e copiado, sem alteração de conteúdo, para `referencias/Projeto Avaliativo Aplicacao Mobile JWT.pdf` (SHA-256 `8C279488BF09F45F5E2480C24BD2A1B610EDCF75D616E674024FD6A5781B0DD6`). A referência técnica `referencias/loja-jwt` foi novamente examinada e não foi modificada. Não se afirma equivalência com PDFs/ZIPs de outros sufixos.
+
+Os fluxos Web/API atuais passaram nos testes reais com MySQL isolado. **A entrega final não está concluída**: faltam hospedagem pública HTTPS autorizada, APK instalado/testado, publicação Git autorizada e apresentação do aluno. O usuário informou que celular e computador usam redes diferentes, então o IP privado foi retirado dos perfis EAS; nenhum build definitivo foi executado com esse endereço.
+
+## Indicadores oficiais reavaliados
+
+| Entrega | Indicador do PDF | Estado atual | Evidência / pendência |
+| --- | --- | --- | --- |
+| 1 | Identificação do problema e proposta de solução | ATENDIDO | README: desperdício, público, justificativa e proposta. |
+| 1 | Definição inicial do sistema | ATENDIDO | Papéis, permissões, funcionalidades, dez telas e fluxo documentados. |
+| 1 | Estrutura inicial do aplicativo | ATENDIDO | React Native/Expo, componentes e telas organizados. |
+| 1 | Navegação, versionamento e primeira versão funcional | PARCIALMENTE ATENDIDO | Dez telas percorridas no Web e Git local; comprovação temporal das entregas não inferida. Remoto permanece no primeiro commit. |
+| 2 | Modelagem dos dados | ATENDIDO | Três tabelas, relacionamentos, índices, CHECKs e SQL portável; revisão real somente leitura. |
+| 2 | Estrutura da API | ATENDIDO | Express, app/server, routes/controllers, middleware e mysql2/promise. |
+| 2 | Integração aplicativo, API e banco | ATENDIDO | fetch, GET/POST e persistência verificados com MySQL real isolado. |
+| 2 | Evolução, documentação e versionamento | PARCIALMENTE ATENDIDO | Documentação atualizada; sete commits locais além do remoto, sem publicação desta revisão. |
+| 3 | Cadastro, login e proteção de senha | ATENDIDO | Cadastro dos dois papéis, validação e bcrypt; testes HTTP e interface. |
+| 3 | JWT e gerenciamento da sessão | PARCIALMENTE ATENDIDO | Assinatura/expiração/Bearer/logout testados. SecureStore nativo revisado; retomada em Android físico pendente. Web usa memória da aba. |
+| 3 | Controle de acesso | ATENDIDO | Matriz 401/403, papéis e propriedade testados diretamente na API. |
+| 3 | CRUD e integração geral | ATENDIDO no Web/dados válidos | Publicar, consultar, editar e excluir logicamente; solicitações/estados. Três registros reais antigos de unidade inválida continuam pendentes de confirmação. |
+| 3 | Funcionamento, evolução e versionamento | PARCIALMENTE ATENDIDO | Testes atuais aprovados e correções documentadas; commit/push final não autorizados. |
+| 4 | Solução final e atendimento ao problema | PARCIALMENTE ATENDIDO | Fluxo funcional no Web; hospedagem externa e validação do APK faltam. |
+| 4 | Funcionamento, testes e build final | PARCIALMENTE ATENDIDO | 12 testes unitários/configuração, 16 MySQL, 17 Web; Expo Doctor 20/20; APK NÃO ATENDIDO. |
+| 4 | Demonstração prática e domínio técnico | NÃO VERIFICADO | Roteiro pronto; depende da apresentação real do aluno. |
+| 4 | Versionamento, documentação e defesa | PARCIALMENTE ATENDIDO | README, SQL, roteiro e relatórios atualizados; remoto final e defesa pendentes. |
+
+## Checklist dos requisitos específicos
+
+| Entrega | Requisitos conferidos | Situação |
+| --- | --- | --- |
+| 1 | Problema, público, justificativa, solução, nome, tipos, permissões, funcionalidades, telas e fluxo | ATENDIDO na documentação atual. |
+| 1 | Expo, estrutura de pastas, React Navigation, pelo menos três telas, navegação e identidade | ATENDIDO no Web; execução física pendente. |
+| 1 | Repositório e primeiros commits | Git local/remoto existem; histórico de oito commits locais é real. Datas de entrega específicas NÃO VERIFICADAS. |
+| 2 | Requisitos funcionais, telas/fluxos, entidades/campos, rotas e permissões atualizados | ATENDIDO no README/SQL/relatórios. |
+| 2 | MySQL, tabelas/FKs, Express, conexão real, fetch, GET/POST, dados persistentes | ATENDIDO nos testes e revisão do schema. |
+| 2 | README/repositório atualizado | README ATENDIDO; remoto atual PARCIALMENTE ATENDIDO. |
+| 3 | Cadastro, hash, login, emissão/armazenamento/envio JWT, Bearer e validação | Implementado; Web/API ATENDIDOS; restauração SecureStore física NÃO VERIFICADA. |
+| 3 | Logout, dois níveis, rotas protegidas, permissões no backend, CRUD completo MySQL | ATENDIDO no escopo Web/API testado. |
+| 3 | Commits/push de autenticação, funcionalidades e correções | Commits locais existentes; push final NÃO ATENDIDO. Não houve publicação nesta revisão. |
+| 4 | Revisar funcionalidades/interface, corrigir erros, testar navegação/auth/permissões/CRUD, organizar código/README | ATENDIDO no escopo automatizado e revisão atual. |
+| 4 | Commit/push final e correspondência com APK | NÃO ATENDIDO: faltam autorização e APK. |
+| 4 | APK gerado, instalável, API configurada e teste físico de auth/níveis/CRUD/navegação | NÃO ATENDIDO: configuração preparada, mas sem build ou instalação. |
+| 4 | Demonstração do problema, solução, cadastro/login/JWT/middleware/níveis/CRUD/banco/Git/APK | Roteiro preparado; apresentação real NÃO VERIFICADA e APK ausente. |
+| Final | Fonte/API/SQL/README/material de apresentação | Arquivos locais prontos para revisão; publicação remota ainda pendente. |
+
+## Referência técnica e preservação
+
+Mantidos os padrões do exemplo: Expo/Native Stack, fetch, API Express separada, mysql2 parametrizado, bcrypt, JWT e consulta do papel no banco. O Alimenta+ usa Context/abas, SecureStore, propriedade das ofertas, validade, endereço liberado após aprovação e estoque por reservas/entregas. Não foram copiados dados comerciais nem alterado o projeto do professor. A tabela técnica detalhada da auditoria inicial permanece no histórico abaixo.
+
+## Correções e arquivos desta revisão final
+
+| Arquivos | Mudança e motivo |
+| --- | --- |
+| `backend/controllers/alimentosController.js` | Comparação de total em milésimos: evita falso 409 quando 0,1 entregue + 0,2 reservado corresponde ao total 0,3. Redução real continua bloqueada. |
+| `screens/DetalhesAlimento.js` | Limpa erro ao tentar carregar novamente; exibe vencido e oculta solicitação de oferta vencida/inativa, mantendo bloqueio do servidor. |
+| `package.json`, `package-lock.json` | Expo 58.0.24, SecureStore 58.0.3 e StatusBar 58.0.5; React/RN preservados. Auditoria sem force; avisos residuais registrados. |
+| `app.json` | Plugin StatusBar requerido pelo patch; configurações existentes preservadas. |
+| `app.config.js`, `shared/configBuild.js`, `eas.json` | Build público exige HTTPS, bloqueia IPs privados e desativa HTTP no perfil público. URL privada removida. |
+| `scripts/verificar-apk.js`, `tests/configBuild.test.js` | Pré-verificação de URL/health e testes de regressão dos endereços proibidos. Sem URL pública, o comando falha intencionalmente. |
+| `.gitignore`, `.easignore` | Proteção de variantes .env, assinatura/credenciais, backups e exclusão de backend/banco do upload EAS. |
+| `backend/tests/mysql.integration.test.js` | Regressão de estoque decimal e confirmação de exclusão lógica pelo fluxo visual. |
+| `tests/fluxo-web.js` | Todas as dez telas; inclui busca, cancelamento, recusa, filtro e exclusão pela interface. |
+| `jsconfig.json` | Inclui a nova configuração dinâmica na análise JS. |
+| `README.md`, `docs/TESTES.md`, este relatório e `docs/ROTEIRO_APRESENTACAO.md` | Atualização de estado real, evidências e preparação para defesa. |
+| `docs/APK_ANDROID.md`, `docs/HOSPEDAGEM_API.md` | Passos de build/instalação, opções de HTTPS e plano de migração autorizado, sem publicação executada. |
+
+## Resultados e limitações
+
+Testes detalhados: [TESTES.md](TESTES.md). As três invocações solicitadas de `npm test`/`npm run test` são aliases da mesma suíte de 12 casos, não 36 casos diferentes. MySQL/Web também compartilham cenários; as contagens incluem teste-pai.
+
+Banco real: 5 usuários, 4 alimentos e 2 solicitações, consultados apenas em leitura nesta revisão. Schema correto; zero estoque negativo/órfãos/duplicações ativas. Unidades `11`, `2,5kg` e `kgaaa` nos IDs 1/2/3 continuam preservadas; ID 3 ativo tem histórico e precisa de correção de dados confirmada antes de editar sua unidade. MySQL/JWT locais não foram reconfigurados.
+
+Nove avisos moderados persistem no npm audit, sem high/critical. Não foi executado `audit fix --force`, downgrade do Expo ou override de dependência principal. Compatibilidade Expo aprovada e Doctor 20/20 não significam ausência de vulnerabilidades.
+
+GitHub foi conferido por consulta somente leitura: local inicialmente `492c0d1`, agora `291988e`; remoto permanece `b37fd98`, sete commits locais à frente. O novo commit `291988e` foi observado durante o trabalho e não foi criado por comando do agente. `git status` estava limpo inicialmente; parte das mudanças entrou nesse commit externo, enquanto os últimos ajustes de documentação/ignore continuam sem commit. Variantes `.env`/credenciais protegidas, segredo JWT local não encontrado nos arquivos versionados pela busca direta realizada. Isso não é auditoria de todos os segredos em todo histórico remoto. O agente não executou commit/push.
+
+APK: não gerado. EAS sem login/projeto; não há SDK/adb configurados para alternativa local validada. IP privado respondeu pelo computador, mas o celular está em outra rede. A configuração atual bloqueia uso desse IP no APK definitivo. Hospedagem é apenas plano, com opções e custos em [HOSPEDAGEM_API.md](HOSPEDAGEM_API.md); nenhuma API/túnel/banco foi publicado.
+
+Para concluir: escolher/autorizar hospedagem e base de demonstração, testar API HTTPS no celular, configurar EAS, aprovar build, instalar/testar, autorizar commit/push correspondente e ensaiar a apresentação. Até lá, a demonstração Web local está testada, mas a entrega 4 permanece incompleta.
+
+---
+
+# Histórico — auditoria técnica de 10/11/2026
+
+O conteúdo abaixo registra a situação inicial. Para estado final, requisitos e contagens, prevalece a revisão de 11/11 acima.
 
 Data: 10/11/2026. Revisão do projeto existente, sem recriação. Nenhum push, exclusão de registros pessoais ou alteração destrutiva de banco foi executado.
 

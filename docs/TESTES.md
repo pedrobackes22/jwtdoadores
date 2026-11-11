@@ -1,4 +1,36 @@
-# Validação atual — 11/11/2026
+# Validação final — 11/11/2026
+
+| Comando/verificação desta revisão final | Resultado | Limite |
+| --- | --- | --- |
+| `npm.cmd test` e duas chamadas `npm.cmd run test` | 12 aprovados e zero falhas em cada execução | Mesma suíte, não somar aliases como casos novos. |
+| `npm.cmd run test:mysql` | 16 aprovados, zero falhas | MySQL isolado; inclui regressão decimal 0,1 + 0,2 e preservação dos scripts. |
+| `npm.cmd run test:web` | 17 aprovados, zero falhas | Edge com API/MySQL reais e origens separadas; dez telas, CRUD e estados completos. |
+| `npm.cmd run lint` | Sem erros/avisos | Inclui app.config.js e novos testes. |
+| `npm.cmd run typecheck` | Concluído | JS sem checkJs estrito. |
+| `npx.cmd expo install --check` | Dependencies are up to date | Após patches Expo 58.0.24, SecureStore 58.0.3 e StatusBar 58.0.5. |
+| `npx.cmd --yes expo-doctor` | 20/20 aprovados | Não substitui teste físico/segurança. |
+| `npm.cmd run export:android` | Bundle Hermes gerado | Foi verificado com URL LAN durante a investigação; essa URL foi depois retirada conforme nova instrução. Não é APK, não foi instalado. |
+| Configuração pública por `@expo/config` com URL de formato HTTPS de teste | Avaliada; `usesCleartextTraffic=false` | Teste estático, sem rede ou publicação. Não foi inventada API pública real. |
+| `/api/health` em localhost e 172.20.134.251 | HTTP 200 pelo computador | Não comprova acesso de outro aparelho/rede; usuário informou redes diferentes. |
+| `npm.cmd run apk:check` no estado final sem URL pública | Bloqueio esperado (exit 1) | URL HTTPS/hospedagem ainda não configurada; não houve build. |
+| `npx.cmd --yes eas-cli@latest whoami` | Not logged in | Build cloud bloqueado também por autenticação/projeto. |
+| `npm.cmd audit fix --dry-run`, `npm.cmd audit fix` sem force, audit final | 9 moderados; zero high/critical | Patches compatíveis aplicados; avisos residuais exigiriam mudanças não consideradas seguras para esta entrega. |
+| `git ls-remote` | Remoto b37fd98; local final 291988e | Consulta somente leitura; sete commits locais ainda não publicados. Commit 291988e observado durante o trabalho, criado por outra ação, sem comando de commit/push do agente. |
+| `git diff --check` | Sem erros | Avisos de conversão LF/CRLF são configuração Git, não falhas de whitespace. |
+
+Fluxo visual final: cadastro DOADOR → login inválido e válido → publicar com validade de hoje → conferir SQL → editar data/descrição → logout → RECEPTOR consulta/busca/detalhes → solicita → DOADOR aprova → RECEPTOR consulta endereço → DOADOR entrega → RECEPTOR cria/cancela outro pedido → cria novamente → DOADOR recusa → consulta filtro de pedidos → exclui logicamente a oferta → logout. Banco confirma preservação do registro com status EXCLUIDO. As dez telas são exercitadas nas rotas dos dois papéis.
+
+API testa cadastro dos dois papéis, bcrypt, JWT/Bearer inválido/expirado, 401/403 e propriedade, validações, CRUD, estados, duas aprovações concorrentes, total decimal com reserva/entrega, persistência após reiniciar API/reconectar MySQL e scripts SQL sem alteração dos registros existentes. Nenhum dado real foi inserido/alterado/apagado pelos testes. A revisão real continua apenas leitura, com os mesmos três valores antigos de unidade pendentes de confirmação.
+
+Intermediários: a atualização Expo solicitou registrar o plugin StatusBar na configuração dinâmica; ele foi incluído e as verificações passaram. Os primeiros comandos de auditoria exigiram ajuste de leitura UTF-16 da saída redirecionada do PowerShell; o relatório final foi consultado diretamente, sem interferir no aplicativo. `npm audit` retorna 1 pelos avisos moderados; isso não foi omitido ou tratado como sucesso limpo.
+
+Hospedagem, acesso público pelo celular, APK/build/instalação e SecureStore físico não foram executados. Nenhum túnel ou recurso externo foi criado. Leia [HOSPEDAGEM_API.md](HOSPEDAGEM_API.md), [APK_ANDROID.md](APK_ANDROID.md) e a [auditoria das entregas](AUDITORIA_ENTREGAS.md).
+
+---
+
+# Histórico — revisão anterior de banco/formulário em 11/11/2026
+
+As contagens abaixo são registros anteriores; a tabela final acima prevalece.
 
 Revisão adicional do banco: [AUDITORIA_BANCO.md](AUDITORIA_BANCO.md). O schema real foi consultado apenas em leitura e não exige alteração estrutural. Foram encontrados três registros de unidade incompatíveis com as opções atuais, preservados para confirmação. A suíte MySQL ganhou uma verificação dos novos scripts de instalação/diagnóstico, comparando estrutura e checksums antes/depois. Resultados atuais: **15 testes MySQL e 16 testes Web aprovados**, sem falhas.
 

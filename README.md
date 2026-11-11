@@ -6,7 +6,9 @@ Aplicativo escolar em JavaScript, React Native e Expo que conecta pessoas e esta
 
 ## Referências e adaptação
 
-Auditoria atual: 10/11/2026. Foi examinada a referência extraída em `referencias/loja-jwt` e lido integralmente o PDF de oito páginas `Downloads/Projeto Avaliativo Aplicacao Mobile JWT.pdf`. Os arquivos com sufixos `(3)` e `(4)` citados no pedido não foram encontrados; não foi comprovada equivalência entre versões. A matriz completa, os problemas e resultados estão em [docs/AUDITORIA_ENTREGAS.md](docs/AUDITORIA_ENTREGAS.md).
+Revisão final: 11/11/2026. A referência `referencias/loja-jwt` foi comparada sem alterações. O PDF completo de oito páginas foi relido e copiado de Downloads para `referencias/Projeto Avaliativo Aplicacao Mobile JWT.pdf`, com hash conferido. Não foi comprovada equivalência com versões de outros sufixos. A situação atual das quatro entregas está em [docs/AUDITORIA_ENTREGAS.md](docs/AUDITORIA_ENTREGAS.md), e os resultados em [docs/TESTES.md](docs/TESTES.md).
+
+Os fluxos Web/API estão testados. **Entrega final ainda depende de API pública HTTPS, APK instalado/testado e publicação Git autorizada.** Como celular e computador usam redes diferentes, o IP privado não será usado no APK definitivo. Opções e plano sem publicação executada: [docs/HOSPEDAGEM_API.md](docs/HOSPEDAGEM_API.md).
 
 Mantidos: JavaScript, Expo Blank com `App.js`, Native Stack, `fetch`, ES Modules, Express, mysql2/promise sem ORM, bcrypt, JWT e papel atual consultado no banco. Adaptados: produtos viraram ofertas com validade e retirada; administração virou propriedade das ofertas; foram acrescentados Context API, SecureStore, abas e solicitações com estoque transacional. Não foram reutilizados usuários, credenciais, catálogo ou resultados de testes do exemplo.
 
@@ -190,12 +192,19 @@ npm run test:mysql
 
 ## APK
 
-Configuração pronta em `eas.json`, perfil `preview` gera APK. Antes de buildar, defina uma API permanente acessível pelo celular. Não compile usando o endereço dos testes ou `localhost`. Instale e faça login no EAS:
+`eas.json` tem perfil `preview` para APK e `production` para AAB. Os dois agora exigem **API pública HTTPS**; o IP privado foi removido a pedido do usuário. O Web local continua com localhost no `.env`. `app.config.js` interrompe o build com URL ausente, local, privada/de emulador ou de exemplo, e desativa HTTP no Android quando usado o perfil público. `.easignore` exclui backend, banco, `.env` e credenciais do upload.
+
+**APK não gerado.** Ainda faltam escolher/autorizar a hospedagem, validar a URL pública no celular e autenticar/vincular um projeto EAS. `eas whoami` retornou `Not logged in`. Nenhum serviço externo ou build foi iniciado. Consulte [docs/APK_ANDROID.md](docs/APK_ANDROID.md) e [docs/HOSPEDAGEM_API.md](docs/HOSPEDAGEM_API.md).
+
+Após a API HTTPS real existir e ser aprovada, configure a conta e a URL (troque `DOMINIO-REAL`):
 
 ```powershell
 npx eas-cli@latest login
 npx eas-cli@latest build:configure
-npx eas-cli@latest env:create --environment preview --name EXPO_PUBLIC_API_URL --value https://sua-api.example.com/api --visibility plaintext
+npx eas-cli@latest env:set --environment preview --name EXPO_PUBLIC_API_URL --value https://DOMINIO-REAL/api --visibility plaintext
+$env:EXPO_PUBLIC_API_URL='https://DOMINIO-REAL/api'
+npm run apk:check
+Remove-Item Env:EXPO_PUBLIC_API_URL
 npx eas-cli@latest build --platform android --profile preview
 ```
 
@@ -203,4 +212,4 @@ Após o build, baixe o APK pela URL fornecida pelo EAS, instale no aparelho e re
 
 ## Entregas e Git
 
-Os arquivos e critérios estão em [docs/AUDITORIA_ENTREGAS.md](docs/AUDITORIA_ENTREGAS.md), com roteiro em [docs/ROTEIRO_APRESENTACAO.md](docs/ROTEIRO_APRESENTACAO.md). Existe Git local com quatro commits anteriores e remoto `origin` configurado. A versão remota não foi conferida e nenhum commit ou push foi feito nesta auditoria. O PDF exige commit e push antes de cada entrega; essa etapa permanece pendente de autorização. Nunca versione `.env`, segredos ou `node_modules`. APK configurado em `eas.json`, mas não gerado nesta auditoria.
+Os arquivos e critérios estão em [docs/AUDITORIA_ENTREGAS.md](docs/AUDITORIA_ENTREGAS.md), com roteiro em [docs/ROTEIRO_APRESENTACAO.md](docs/ROTEIRO_APRESENTACAO.md). Há oito commits locais; HEAD `291988e`. Esse último commit surgiu durante a revisão por outra ação: o agente não executou commit/push. Consulta somente leitura por `git ls-remote` confirmou o remoto `origin/main` em `b37fd98` (primeiro commit), sete commits atrás. Parte da revisão está nesse commit local; as últimas alterações de documentação/ignore ainda estão sem commit e nada disso está publicado no remoto. `.gitignore` protege `.env`, variantes e credenciais; `.env.example` continua versionado. Confira `git diff` antes de autorizar publicação, e não invente histórico de entregas.

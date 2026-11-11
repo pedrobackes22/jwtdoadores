@@ -109,6 +109,8 @@ Consultas parametrizadas, validação no servidor, limite de JSON, limite de ten
 
 ## Banco e estoque
 
+Revisão do MySQL real e instruções do Workbench: [docs/AUDITORIA_BANCO.md](docs/AUDITORIA_BANCO.md). A estrutura inspecionada não exige migração. [database/atualizacao_alimenta_plus.sql](database/atualizacao_alimenta_plus.sql) contém somente diagnóstico de leitura; [database/estrutura_final_alimenta_plus.sql](database/estrutura_final_alimenta_plus.sql) instala a estrutura completa em outro computador. Foram identificadas três unidades antigas fora das opções atuais, preservadas para confirmação antes de qualquer correção de dados. O arquivo original de instalação continua disponível.
+
 `usuarios` 1:N `alimentos`; `usuarios` (receptor) 1:N `solicitacoes`; `alimentos` 1:N `solicitacoes`. InnoDB, FKs, índices, CHECK de quantidades positivas, e-mail único e chave gerada que impede pedidos ativos duplicados para o mesmo receptor/alimento.
 
 - `quantidade`: total publicado, incluindo porções já reservadas/entregues.

@@ -79,7 +79,10 @@ test(
         }
       }
       assert.ok(db, "MySQL isolado não iniciou. Veja " + pasta);
-      await db.query(await readFile("database/alimenta_plus.sql", "utf8"));
+      // Instalação nova: usa o arquivo final entregue para outro computador.
+      await db.query(
+        await readFile("database/estrutura_final_alimenta_plus.sql", "utf8"),
+      );
       Object.assign(process.env, {
         DB_HOST: "127.0.0.1",
         DB_PORT: String(port),
@@ -608,6 +611,50 @@ test(
           );
           assert.ok(dados[0].n > 0);
           await nova.end();
+        },
+      );
+      await t.test(
+        "SQL de instalação e diagnóstico preservam estrutura e dados existentes",
+        async () => {
+          const tabelas = ["usuarios", "alimentos", "solicitacoes"];
+          const [antes] = await db.query(
+            "CHECKSUM TABLE alimenta_plus.usuarios, alimenta_plus.alimentos, alimenta_plus.solicitacoes EXTENDED",
+          );
+          const definicoes = [];
+          for (const tabela of tabelas)
+            definicoes.push((await db.query("SHOW CREATE TABLE " + tabela))[0]);
+          // IF NOT EXISTS deve preservar registros e não alterar objetos existentes.
+          await db.query(
+            await readFile(
+              "database/estrutura_final_alimenta_plus.sql",
+              "utf8",
+            ),
+          );
+          await db.query(await readFile("database/alimenta_plus.sql", "utf8"));
+          const [diagnostico] = await db.query(
+            await readFile("database/atualizacao_alimenta_plus.sql", "utf8"),
+          );
+          const verificacoes = diagnostico.find(
+            (r) => Array.isArray(r) && r[0]?.verificacao,
+          );
+          assert.ok(verificacoes?.length >= 17);
+          for (const v of verificacoes)
+            assert.equal(Number(v.inconsistencias), 0, v.verificacao);
+          const [depois] = await db.query(
+            "CHECKSUM TABLE alimenta_plus.usuarios, alimenta_plus.alimentos, alimenta_plus.solicitacoes EXTENDED",
+          );
+          assert.deepEqual(depois, antes);
+          for (let i = 0; i < tabelas.length; i++) {
+            assert.deepEqual(
+              (await db.query("SHOW CREATE TABLE " + tabelas[i]))[0],
+              definicoes[i],
+            );
+          }
+          const [checks] = await db.query(
+            "SELECT CONSTRAINT_NAME, ENFORCED FROM information_schema.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA='alimenta_plus' AND CONSTRAINT_TYPE='CHECK'",
+          );
+          assert.equal(checks.length, 2);
+          assert.ok(checks.every((c) => c.ENFORCED === "YES"));
         },
       );
       if (process.env.TEST_WEB === "1")

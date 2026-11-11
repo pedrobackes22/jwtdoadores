@@ -11,6 +11,7 @@
   },
   "include": [
     "App.js",
+    "app.config.js",
     "index.js",
     "components/**/*.js",
     "contexts/**/*.js",

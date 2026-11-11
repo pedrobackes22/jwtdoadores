@@ -183,6 +183,60 @@ export async function validarInterface({ app, senha, verificarPublicacao }) {
     await botao("Confirmar");
     await expect(entrega.getByText("Entregue", { exact: true })).toBeVisible();
     await sair();
+    // Navegação completa: cancelar, solicitar novamente, recusar e excluir pela UI.
+    async function pedirNovamente() {
+      await page.getByRole("tab", { name: /Catálogo/ }).click();
+      await campo("O que você procura?").fill("Maçãs do fluxo visual");
+      await botao("Ver detalhes");
+      await campo("Quantidade solicitada (kg)").fill("0,5");
+      await botao("Solicitar doação");
+      await botao("Confirmar");
+      await expect(
+        page.getByText(/Solicitação enviada! Acompanhe/),
+      ).toBeVisible();
+      await botao("Voltar ao catálogo");
+      await page.getByRole("tab", { name: /Solicitações/ }).click();
+    }
+    function pedidoPendente() {
+      return page
+        .getByText("Maçãs do fluxo visual", { exact: true })
+        .locator("..")
+        .filter({ has: page.getByText("Pendente", { exact: true }) });
+    }
+    await entrar("receptor");
+    await pedirNovamente();
+    await pedidoPendente()
+      .getByRole("button", { name: "Cancelar solicitação", exact: true })
+      .click();
+    await botao("Confirmar");
+    await expect(page.getByText("Cancelada", { exact: true })).toBeVisible();
+    await pedirNovamente();
+    await sair();
+    await entrar("doadorvisual");
+    await page.getByRole("tab", { name: /Solicitações/ }).click();
+    await pedidoPendente()
+      .getByRole("button", { name: "Recusar", exact: true })
+      .click();
+    await botao("Confirmar");
+    await expect(page.getByText("Recusada", { exact: true })).toBeVisible();
+    await page.getByRole("tab", { name: /Doações/ }).click();
+    await botao("Ver solicitações");
+    await expect(
+      page.getByRole("button", {
+        name: "Mostrar todos os pedidos",
+        exact: true,
+      }),
+    ).toBeVisible();
+    await botao("Mostrar todos os pedidos");
+    await page.getByRole("tab", { name: /Doações/ }).click();
+    await botao("Excluir");
+    await botao("Confirmar");
+    await expect(
+      page.getByText(
+        "Você ainda não publicou doações. Comece pelo botão acima.",
+      ),
+    ).toBeVisible();
+    await sair();
     // O Playwright não expõe preflights automáticos como respostas de página.
     // OPTIONS é validado na suíte HTTP; aqui validamos o acesso entre origens.
     expect(respostasApi).toContain(201);

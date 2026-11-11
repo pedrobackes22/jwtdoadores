@@ -87,7 +87,11 @@ export async function editar(req, res) {
       falhar(403, "Somente o dono pode editar esta oferta.");
     if (a.status !== "ATIVO") falhar(409, "Oferta excluída.");
     const saldo = await estoque(db, a);
-    if (novo.quantidade < saldo.reservada + saldo.entregue)
+    // Compare em milésimos para não tratar 0.1 + 0.2 como maior que 0.3.
+    if (
+      Math.round(novo.quantidade * 1000) <
+      Math.round((saldo.reservada + saldo.entregue) * 1000)
+    )
       falhar(
         409,
         "Total não pode ser menor que a quantidade reservada e entregue.",

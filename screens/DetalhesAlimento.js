@@ -3,6 +3,7 @@ import { Text, Image } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import { api } from "../services/api.js";
 import { useAuth } from "../contexts/AuthContext.js";
+import { hojeLocal } from "../shared/datas.js";
 import {
   Pagina,
   Painel,
@@ -25,6 +26,7 @@ export default function DetalhesAlimento({ route, navigation }) {
     [sucesso, setSucesso] = useState("");
   const carregar = useCallback(
     async function () {
+      setErro("");
       try {
         setA((await api("/alimentos/" + id)).dados);
       } catch (e) {
@@ -110,9 +112,11 @@ export default function DetalhesAlimento({ route, navigation }) {
                 "Status",
                 a.status === "EXCLUIDO"
                   ? "Excluído"
-                  : Number(a.disponivel) <= 0
-                    ? "Sem disponibilidade"
-                    : "Validade até " + dataBR(a.data_validade),
+                  : a.data_validade < hojeLocal()
+                    ? "Vencido"
+                    : Number(a.disponivel) <= 0
+                      ? "Sem disponibilidade"
+                      : "Validade até " + dataBR(a.data_validade),
               ],
             ].map(([r, v]) => (
               <Text key={r} style={estilos.texto}>
@@ -130,6 +134,8 @@ export default function DetalhesAlimento({ route, navigation }) {
           <Aviso mensagem={sucesso} />
           {usuario.tipo_usuario === "RECEPTOR" &&
             !sucesso &&
+            a.status === "ATIVO" &&
+            a.data_validade >= hojeLocal() &&
             Number(a.disponivel) > 0 && (
               <Painel>
                 <CampoInput

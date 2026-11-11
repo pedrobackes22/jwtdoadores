@@ -586,6 +586,74 @@ test(
         );
       });
       await t.test(
+        "edição preserva total decimal igual à soma reservada e entregue",
+        async () => {
+          const dados = { ...oferta, quantidade: 0.3 };
+          const criado = await req("/alimentos", doador.token, "POST", dados);
+          assert.equal(criado.status, 201);
+          const primeiro = await req("/solicitacoes", receptor.token, "POST", {
+            alimento_id: criado.id,
+            quantidade_solicitada: 0.1,
+          });
+          assert.equal(primeiro.status, 201);
+          for (const acao of ["aprovar", "entregar"])
+            assert.equal(
+              (
+                await req(
+                  `/solicitacoes/${primeiro.id}/${acao}`,
+                  doador.token,
+                  "PATCH",
+                )
+              ).status,
+              200,
+            );
+          const segundo = await req("/solicitacoes", r2.token, "POST", {
+            alimento_id: criado.id,
+            quantidade_solicitada: 0.2,
+          });
+          assert.equal(segundo.status, 201);
+          assert.equal(
+            (
+              await req(
+                `/solicitacoes/${segundo.id}/aprovar`,
+                doador.token,
+                "PATCH",
+              )
+            ).status,
+            200,
+          );
+          assert.equal(
+            (await req(`/alimentos/${criado.id}`, doador.token, "PUT", dados))
+              .status,
+            200,
+          );
+          assert.equal(
+            (
+              await req(`/alimentos/${criado.id}`, doador.token, "PUT", {
+                ...dados,
+                quantidade: 0.299,
+              })
+            ).status,
+            409,
+          );
+          assert.equal(
+            (
+              await req(
+                `/solicitacoes/${segundo.id}/recusar`,
+                doador.token,
+                "PATCH",
+              )
+            ).status,
+            200,
+          );
+          assert.equal(
+            (await req(`/alimentos/${criado.id}`, doador.token, "DELETE"))
+              .status,
+            200,
+          );
+        },
+      );
+      await t.test(
         "dados persistem após reiniciar a API e reconectar ao MySQL",
         async () => {
           await new Promise((r) => servidor.close(r));
@@ -678,12 +746,13 @@ test(
               },
             });
             const [salvos] = await db.execute(
-              "SELECT DATE_FORMAT(data_validade,'%Y-%m-%d') validade, unidade, quantidade, descricao FROM alimenta_plus.alimentos WHERE nome=?",
+              "SELECT DATE_FORMAT(data_validade,'%Y-%m-%d') validade, unidade, quantidade, descricao, status FROM alimenta_plus.alimentos WHERE nome=?",
               ["Maçãs do fluxo visual"],
             );
             assert.equal(salvos.length, 1);
             assert.equal(salvos[0].validade, validadeEditada);
             assert.equal(salvos[0].unidade, "kg");
+            assert.equal(salvos[0].status, "EXCLUIDO");
             assert.equal(Number(salvos[0].quantidade), 4);
             assert.equal(
               salvos[0].descricao,

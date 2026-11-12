@@ -115,7 +115,33 @@ export async function validarInterface({ app, senha, verificarPublicacao }) {
     await verificarPublicacao();
     await botao("Concluir");
     // Edição reutiliza a data ISO recebida da API, mostrando o formato brasileiro.
+    const rotaEdicao = /\/api\/alimentos\/\d+$/;
+    const falharEdicao = async (r) => {
+      if (r.request().method() === "GET") {
+        await r.fulfill({
+          status: 500,
+          contentType: "application/json",
+          headers: { "Access-Control-Allow-Origin": "*" },
+          body: JSON.stringify({
+            mensagem: "Falha simulada para regressão de carregamento.",
+          }),
+        });
+      } else await r.continue();
+    };
+    await page.route(rotaEdicao, falharEdicao);
     await botao("Editar");
+    await expect(
+      page.getByText("Falha interna do servidor. Tente novamente mais tarde."),
+    ).toBeVisible();
+    await expect(campo("Nome do alimento *")).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "Salvar alterações", exact: true }),
+    ).toHaveCount(0);
+    await page.unroute(rotaEdicao, falharEdicao);
+    await botao("Tentar carregar novamente");
+    await expect(campo("Nome do alimento *")).toHaveValue(
+      "Maçãs do fluxo visual",
+    );
     await botao("Validade: " + dataBrasileira(hojeLocal()));
     await botao("›");
     const [ano, mes] = hojeLocal().split("-").map(Number);
@@ -131,6 +157,48 @@ export async function validarInterface({ app, senha, verificarPublicacao }) {
     await page.screenshot({ path: "docs/doacoes.png", fullPage: true });
     await sair();
     await entrar("receptor");
+    // A resposta de uma busca antiga não pode apagar a busca atual.
+    let liberarAntiga, avisarAntiga;
+    const bloqueioAntigo = new Promise((r) => {
+      liberarAntiga = r;
+    });
+    const iniciadaAntiga = new Promise((r) => {
+      avisarAntiga = r;
+    });
+    const rotaBusca = /\/api\/alimentos\?/;
+    const atrasarBusca = async (r) => {
+      if (
+        new URL(r.request().url()).searchParams.get("busca") ===
+        "sem-resultado-auditoria"
+      ) {
+        const resposta = await r.fetch();
+        avisarAntiga();
+        await bloqueioAntigo;
+        await r.fulfill({ response: resposta });
+      } else await r.continue();
+    };
+    await page.route(rotaBusca, atrasarBusca);
+    await campo("O que você procura?").fill("sem-resultado-auditoria");
+    await iniciadaAntiga;
+    await campo("O que você procura?").fill("Maçãs do fluxo visual");
+    await page.waitForResponse(
+      (r) =>
+        new URL(r.url()).searchParams.get("busca") === "Maçãs do fluxo visual",
+    );
+    const antigaRecebida = page.waitForResponse(
+      (r) =>
+        new URL(r.url()).searchParams.get("busca") ===
+        "sem-resultado-auditoria",
+    );
+    liberarAntiga();
+    await antigaRecebida;
+    await page.evaluate(
+      () =>
+        new Promise((r) =>
+          requestAnimationFrame(() => requestAnimationFrame(r)),
+        ),
+    );
+    await page.unroute(rotaBusca, atrasarBusca);
     await expect(
       page.getByText("Maçãs do fluxo visual", { exact: true }),
     ).toBeVisible();

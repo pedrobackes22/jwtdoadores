@@ -175,6 +175,15 @@ test(
             ).status,
             400,
           );
+          assert.equal(
+            (
+              await req("/auth/cadastro", null, "POST", {
+                ...usuario,
+                senha: "        ",
+              })
+            ).status,
+            400,
+          );
           const r = await fetch(baseApi + "/auth/cadastro", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -241,6 +250,10 @@ test(
         },
       );
       await t.test("sem token, token inválido e token expirado", async () => {
+        const esquema = await fetch(baseApi + "/auth/me", {
+          headers: { Authorization: "bearer   " + doador.token },
+        });
+        assert.equal(esquema.status, 200);
         for (const token of [
           null,
           "invalido",

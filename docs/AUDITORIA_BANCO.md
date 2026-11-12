@@ -1,5 +1,7 @@
 # Revisão MySQL — Alimenta+
 
+Reconfirmação de 12/11/2026: as contagens e pendências de unidade abaixo permanecem, com acesso somente leitura. A nova busca de segurança encontrou correspondência entre a senha MySQL atual e versões antigas do exemplo de ambiente; consulte [PENDENCIAS_FINAIS.md](PENDENCIAS_FINAIS.md), item P1. Resultados atuais de testes estão em [TESTES.md](TESTES.md); os números abaixo registram a revisão de 11/11.
+
 Data: 11/11/2026. Banco real consultado: `alimenta_plus`, MySQL **8.0.46**. A revisão usou metadados, `SHOW CREATE TABLE` e consultas de leitura. O diagnóstico foi executado dentro de `START TRANSACTION READ ONLY`. Não foram executadas alterações estruturais ou de registros no banco real.
 
 ## Conclusão

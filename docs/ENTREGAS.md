@@ -1,6 +1,6 @@
 # Entregas e análise da referência
 
-> Documento histórico de 06/11/2026. Consulte a auditoria atual em [AUDITORIA_ENTREGAS.md](AUDITORIA_ENTREGAS.md), que identifica as versões efetivamente disponíveis, matriz detalhada, correções e limitações da verificação de 10/11/2026.
+> Documento histórico de 06/11/2026. Consulte a auditoria atual de 12/11 em [AUDITORIA_ENTREGAS.md](AUDITORIA_ENTREGAS.md), com indicadores oficiais, evidências, contagens e correções. O passo a passo do que falta está em [PENDENCIAS_FINAIS.md](PENDENCIAS_FINAIS.md). Os resultados abaixo não são a comprovação da execução atual.
 
 Referências locais: ZIP `loja-jwt.zip` e PDF `Projeto Avaliativo Aplicacao Mobile JWT.pdf`, encontrados em Downloads. O ZIP original não foi alterado. A cópia extraída `referencias/loja-jwt` é ignorada pelo Git.
 

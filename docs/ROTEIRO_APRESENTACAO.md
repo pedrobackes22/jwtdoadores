@@ -1,8 +1,10 @@
 # Roteiro de apresentação — Alimenta+
 
+Atualização em 12/11/2026: a [auditoria atual](AUDITORIA_ENTREGAS.md) e a [lista de pendências](PENDENCIAS_FINAIS.md) prevalecem sobre registros anteriores. Há 12 testes unitários, 16 MySQL e 17 Web aprovados e Doctor 20/20; também foram compilados os bundles iOS/Android. Isso não comprova APK, Expo Go físico ou hospedagem. A credencial MySQL que coincide com o histórico precisa de rotação autorizada antes de publicar o Git. Não a exiba na apresentação.
+
 ## Preparação
 
-Revisão final de 11/11/2026: ensaie primeiro no Web. A apresentação em celular de outra rede exige a [API HTTPS hospedada](HOSPEDAGEM_API.md) e o [APK instalado](APK_ANDROID.md); ambos permanecem pendentes de autorização/configuração. Não use o IP privado no APK definitivo. O remoto GitHub ainda está no primeiro commit; a versão final precisa ser enviada com autorização.
+Ensaie primeiro no Web. A apresentação em celular de outra rede exige a [API HTTPS hospedada](HOSPEDAGEM_API.md) e o [APK instalado](APK_ANDROID.md); ambos permanecem pendentes de autorização/configuração. Não use o IP privado no APK definitivo. O remoto GitHub ainda está no primeiro commit; a versão final precisa ser enviada com autorização depois de resolver a credencial histórica.
 
 1. Configure MySQL e os dois `.env` conforme README. Inicie `npm run api:dev` e `npx expo start --web --clear` em terminais separados. No PowerShell restrito, use `npm.cmd` e `npx.cmd`.
 2. Abra `http://localhost:8081`. Para celular use o IPv4 do computador; para APK use API acessível no aparelho. Nunca mostre o conteúdo de `.env`, senhas ou tokens na projeção.

@@ -1,8 +1,8 @@
 import jwt from "jsonwebtoken";
 import pool from "../database/conexao.js";
 export default async function autenticarToken(req, res, next) {
-  const partes = (req.headers.authorization || "").split(" ");
-  if (partes.length !== 2 || partes[0] !== "Bearer")
+  const partes = (req.headers.authorization || "").trim().split(/\s+/);
+  if (partes.length !== 2 || partes[0].toLowerCase() !== "bearer" || !partes[1])
     return res.status(401).json({ mensagem: "Informe um Bearer Token." });
   let payload;
   try {

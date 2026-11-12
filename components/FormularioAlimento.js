@@ -32,27 +32,47 @@ export default function FormularioAlimento({ id, navigation }) {
     [erro, setErro] = useState(""),
     [loading, setLoading] = useState(false),
     [carregando, setCarregando] = useState(Boolean(id)),
+    [carregado, setCarregado] = useState(!id),
+    [tentativa, setTentativa] = useState(0),
     [sucesso, setSucesso] = useState(false);
   useEffect(
     function () {
-      if (id)
+      let ativo = true;
+      if (id) {
         api("/alimentos/" + id)
-          .then((r) =>
+          .then((r) => {
+            if (!ativo) return;
             setForm(
               Object.fromEntries(
                 Object.keys(vazio).map((k) => [k, String(r.dados[k] ?? "")]),
               ),
-            ),
-          )
-          .catch((e) => setErro(e.message))
-          .finally(() => setCarregando(false));
+            );
+            setCarregado(true);
+          })
+          .catch((e) => {
+            if (ativo) setErro(e.message);
+          })
+          .finally(() => {
+            if (ativo) setCarregando(false);
+          });
+      }
+      return () => {
+        ativo = false;
+      };
     },
-    [id],
+    [id, tentativa],
   );
   function mudar(k, v) {
     setForm({ ...form, [k]: v });
   }
+  function tentarNovamente() {
+    setCarregando(true);
+    setCarregado(false);
+    setErro("");
+    setTentativa((valor) => valor + 1);
+  }
   async function salvar() {
+    if (id && !carregado) return;
     setErro("");
     for (const campo of [
       "nome",
@@ -94,6 +114,16 @@ export default function FormularioAlimento({ id, navigation }) {
     }
   }
   if (carregando) return <Carregamento />;
+  if (id && !carregado)
+    return (
+      <Pagina>
+        <Aviso
+          mensagem={erro || "Não foi possível carregar a oferta para edição."}
+        />
+        <Botao titulo="Tentar carregar novamente" onPress={tentarNovamente} />
+        <Botao titulo="Voltar" secundario onPress={() => navigation.goBack()} />
+      </Pagina>
+    );
   return (
     <Pagina>
       <Text style={estilos.titulo}>

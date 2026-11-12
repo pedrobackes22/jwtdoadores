@@ -13,6 +13,7 @@ function senhaValida(valor) {
   // Espaços fazem parte da senha; não normalizar antes de gerar/comparar o hash.
   if (
     typeof valor !== "string" ||
+    !valor.trim() ||
     valor.length < 8 ||
     Buffer.byteLength(valor, "utf8") > 72
   )

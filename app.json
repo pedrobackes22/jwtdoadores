@@ -5,12 +5,29 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "android": { "package": "br.com.alimentaplus.app" },
+    "android": {
+      "package": "br.com.alimentaplus.app"
+    },
     "plugins": [
       "expo-secure-store",
       "expo-status-bar",
-      ["expo-build-properties", { "android": { "usesCleartextTraffic": true } }]
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ]
     ],
-    "web": { "bundler": "metro", "name": "Alimenta+" }
+    "web": {
+      "bundler": "metro",
+      "name": "Alimenta+"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "c2c193a3-99ab-4eea-b781-8e2cb73b5060"
+      }
+    }
   }
 }

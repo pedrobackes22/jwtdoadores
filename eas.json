@@ -2,6 +2,7 @@
   "cli": { "version": ">= 16.0.0", "appVersionSource": "local" },
   "build": {
     "preview": {
+      "developmentClient": false,
       "environment": "preview",
       "env": {
         "ALIMENTA_APK": "1",

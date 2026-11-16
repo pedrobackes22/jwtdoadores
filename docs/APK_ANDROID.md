@@ -1,74 +1,87 @@
-# APK Android — configuração e sequência de entrega
+﻿# Entrega 4 — APK Android
 
-## Estado atual
+Revisão: 16/11/2026. APK ainda não gerado. Nenhum commit ou push executado.
 
-**APK não gerado.** O usuário confirmou que o celular está em outra rede e solicitou API pública HTTPS. O IP privado foi removido de `eas.json`. API pública ainda não existe/autorizada, e `eas whoami` retornou **Not logged in**. Também falta vincular um projeto EAS; não há `extra.eas.projectId` configurado. Nenhum build ou upload foi iniciado.
+## Estrutura e configuração
 
-- `preview`: distribuição interna e `android.buildType = apk`.
-- `production`: AAB, não é o perfil de instalação direta para apresentação.
-- Ambos exigem URL pública HTTPS por `ALIMENTA_API_PUBLICA=1`.
-- `app.config.js` interrompe builds com URL ausente, local, privada/de emulador ou de exemplo. No perfil público, Android usa `usesCleartextTraffic=false`.
-- Desenvolvimento local continua permitindo HTTP, e o `.env` do Expo Web continua `http://localhost:3000/api`.
-- `.easignore` exclui backend, SQL, `.env`, credenciais, dumps/logs/artefatos de teste. MySQL e JWT não são configurações do cliente.
+- Cliente Expo/React Native: App.js, screens/, navigation/, components/, contexts/ e services/. O cliente HTTP usa EXPO_PUBLIC_API_URL e a sessão usa SecureStore no Android.
+- Servidor separado: backend/ (Express, autenticação JWT, rotas e conexão MySQL). Estrutura SQL em database/. O APK não inclui nem inicia o servidor ou o banco.
+- eas.json já continha preview com distribution=internal, android.buildType=apk e environment=preview. Foi acrescentado developmentClient=false para explicitar um aplicativo independente do Metro/Expo Go. Production permanece AAB.
+- app.json define br.com.alimentaplus.app. Falta vincular o projeto EAS (extra.eas.projectId); não foi inventado um identificador.
+- app.config.js já bloqueia builds sem URL adequada e exige HTTPS público nos perfis configurados. Nesse caso, também desabilita tráfego HTTP no Android.
+- .gitignore e .easignore já excluem arquivos de ambiente e credenciais. O arquivo de upload também exclui backend e SQL. Não colocar segredos em EXPO_PUBLIC_*: esses valores entram no APK.
 
-O bundle Hermes foi validado nesta revisão antes da decisão de exigir hospedagem pública. Exportação de bundle não é APK instalável. Não houve teste de instalação, SecureStore ou retomada em Android físico.
+## Pendências antes de compilar
 
-## Antes do build
+A configuração local da API não atende ao uso fora da rede local. Não foi fornecida uma URL pública real para substituir essa configuração. Hospede a API Express e o MySQL acessível por ela, com domínio HTTPS estável. Não publique a porta do MySQL para o celular: o aplicativo acessa somente a API. Configure DB_* e JWT_SECRET exclusivamente no servidor.
 
-1. Escolha a hospedagem e autorize a publicação conforme [HOSPEDAGEM_API.md](HOSPEDAGEM_API.md).
-2. Valide a API pela internet e pelo celular em outra rede, incluindo o fluxo real com banco. `health` no computador sozinho não comprova isso.
-3. Confirme a URL estável terminando em `/api`. Não usar `172.20.134.251`, localhost ou endereço de emulador.
-4. Faça login no EAS localmente, sem compartilhar sua senha:
+O comando de início da hospedagem é node backend/server.js (npm start inicia o Expo). O servidor já respeita PORT e escuta 0.0.0.0. Verifique conexão com o banco, TLS e configuração do proxy conforme a hospedagem escolhida. /api/health sozinho não testa consultas ao MySQL.
 
-```powershell
-npx.cmd eas-cli@latest login
-npx.cmd eas-cli@latest whoami
-npx.cmd eas-cli@latest build:configure
-```
+## Comandos no PowerShell
 
-Quando solicitado, crie/vincule seu projeto. Se a configuração dinâmica impedir escrita automática, insira `owner`/`extra.eas.projectId` em `app.json` com os valores fornecidos pelo EAS. Não invente IDs. Revise o diff e preserve o perfil preview e a validação de URL.
-
-## Configurar a URL pública e testar
-
-Após a API existir, use a URL **real**, não os marcadores abaixo:
+Use npm.cmd/npx.cmd para evitar o bloqueio de scripts .ps1 deste computador. Execute na raiz do projeto. Troque o marcador pela URL REAL da hospedagem; não execute o build com o marcador.
 
 ```powershell
-npx.cmd eas-cli@latest env:set --environment preview --name EXPO_PUBLIC_API_URL --value https://DOMINIO-REAL/api --visibility plaintext
+npm.cmd ci
 $env:EXPO_PUBLIC_API_URL='https://DOMINIO-REAL/api'
 npm.cmd run apk:check
-Remove-Item Env:EXPO_PUBLIC_API_URL
+npx.cmd eas-cli@latest login
+npx.cmd eas-cli@latest whoami
+npx.cmd eas-cli@latest build:configure --platform android
 ```
 
-`apk:check` valida o formato e consulta `/api/health` a partir do computador; não substitui o teste no celular. Sem URL configurada ele falha intencionalmente. A URL pública entra no aplicativo e não é segredo; `DB_PASSWORD` e `JWT_SECRET` nunca devem usar prefixo `EXPO_PUBLIC_`.
+Crie ou vincule o projeto correto quando solicitado. Se o EAS não conseguir escrever na configuração dinâmica, use os valores que ele fornecer para owner e extra.eas.projectId em app.json. Preserve o perfil preview existente. Não compartilhe senha ou token.
 
-Confirme também a configuração local do perfil sem iniciar build:
+Cadastre a mesma URL no ambiente remoto, pois o .env local não é enviado:
 
 ```powershell
-$env:EXPO_PUBLIC_API_URL='https://DOMINIO-REAL/api'
+npx.cmd eas-cli@latest env:set --environment preview --name EXPO_PUBLIC_API_URL --value "$env:EXPO_PUBLIC_API_URL" --visibility plaintext
+npm.cmd test
+npm.cmd run lint
+npm.cmd run typecheck
+npx.cmd expo install --check
+npx.cmd expo-doctor@latest
 $env:ALIMENTA_APK='1'
 $env:ALIMENTA_API_PUBLICA='1'
 npx.cmd expo config --type public
-Remove-Item Env:EXPO_PUBLIC_API_URL, Env:ALIMENTA_APK, Env:ALIMENTA_API_PUBLICA
-```
-
-## Gerar (somente após confirmação)
-
-```powershell
+npm.cmd run export:android
 npx.cmd eas-cli@latest build --platform android --profile preview
 ```
 
-Se necessário, permita ao EAS gerenciar a assinatura Android. Não versione keystore, senha ou `credentials.json`. Aguarde estado final concluído e salve build ID, URL do `.apk` e identificação da versão do código. Fila, exportação ou build com erro não comprovam APK gerado. Não use `--auto-submit`.
+Avance apenas quando as verificações passarem. Se solicitado, permita ao EAS gerar/gerenciar a chave de assinatura Android e preserve acesso à conta para futuras atualizações. Não versione a chave ou sua senha. A URL fica embutida no aplicativo: mudar a URL exige outro APK nesta configuração.
 
-Antes da entrega, o código correspondente deve estar no GitHub; commit/push ainda dependem de autorização. Não há Android SDK/adb configurados neste ambiente para uma alternativa local validada.
+Após terminar, remova somente as variáveis temporárias desta sessão:
 
-## Instalar e validar no celular
+```powershell
+Remove-Item Env:EXPO_PUBLIC_API_URL, Env:ALIMENTA_APK, Env:ALIMENTA_API_PUBLICA
+```
 
-1. Abra o link do build concluído, baixe o `.apk` e permita a instalação pelo navegador quando solicitado.
-2. Abra Alimenta+, cadastre/entre como DOADOR, publique com calendário/unidade, consulte e edite.
-3. Entre como RECEPTOR, pesquise, consulte detalhes e solicite. Verifique a ausência das ferramentas de doador e os bloqueios do servidor.
-4. No DOADOR, aprove; no RECEPTOR, confira endereço liberado. No DOADOR, marque como entregue.
-5. Teste outro pedido para recusa, um pendente para cancelamento e uma oferta sem reserva para exclusão lógica.
-6. Feche e reabra: confira SecureStore/restauração. Faça logout e verifique que Voltar não reabre sessão.
-7. Repita em Wi-Fi diferente/dados móveis e confira persistência no MySQL da hospedagem. Não exiba senhas, hashes ou dados pessoais ao professor.
+## Baixar e instalar
 
-Referências oficiais: [APK e instalação](https://docs.expo.dev/build-reference/apk/) e [ambientes EAS](https://docs.expo.dev/eas/environment-variables/).
+O terminal fornece o link da página do build. Aguarde o estado Finished, abra essa página no celular e use o botão de download/instalação para baixar o .apk. Autorize a instalação pelo navegador quando o Android solicitar. O APK preview funciona sem Expo Go ou Metro, mas suas operações dependem da API e do banco disponíveis.
+
+Para reencontrar o build:
+
+```powershell
+npx.cmd eas-cli@latest build:list --platform android --build-profile preview --limit 1
+```
+
+## Verificação desta revisão
+
+- 12 testes passaram usando node --test --test-isolation=none backend/tests/regras.test.js tests/clienteApi.test.js tests/configBuild.test.js. A execução normal encontrou spawn EPERM no ambiente restrito.
+- Lint e TypeScript concluíram sem erros.
+- expo install --check em modo offline indicou dependências atualizadas, com ressalva do próprio Expo sobre confiabilidade offline. A consulta online falhou por restrição de rede; repetir com internet e executar expo-doctor.
+- Exportação Android processou 874 módulos, mas falhou ao iniciar Hermes com spawn EPERM. A exportação completa e a compilação nativa continuam pendentes; isso não comprova erro no código nem sucesso do APK.
+- apk:check falhou por falta de URL pública configurada. Não foi testada disponibilidade de uma hospedagem externa, nem login/vínculo remoto EAS nesta revisão.
+
+## Testar antes de entregar
+
+- Instalar e abrir o APK em Android físico, com Metro desligado; fechar e reabrir para testar restauração da sessão e logout.
+- Em dados móveis ou outro Wi-Fi: cadastro/login dos dois perfis, lista, busca e detalhes; publicação, edição e exclusão de oferta.
+- Solicitação pelo receptor, aprovação/recusa pelo doador, cancelamento, endereço após aprovação e confirmação de entrega; conferir permissões entre perfis.
+- Quantidades, saldo, unidades e datas; campos inválidos, credenciais incorretas, sessão expirada e tentativa duplicada.
+- Sem internet/API indisponível: mensagens de erro, tempo limite e recuperação da conexão.
+- Conferir persistência no MySQL hospedado após reiniciar API/app, layout/teclado/calendário no celular e disponibilidade da hospedagem durante a apresentação.
+- Guardar APK, versão e link do build; preparar contas e dados de demonstração sem informações pessoais.
+
+Referências oficiais: [APK](https://docs.expo.dev/build-reference/apk/), [variáveis de ambiente](https://docs.expo.dev/eas/environment-variables/) e [configuração EAS](https://docs.expo.dev/build-reference/build-configuration/).

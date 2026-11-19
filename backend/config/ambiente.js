@@ -5,6 +5,9 @@ dotenv.config({
   quiet: true,
 });
 export function validarAmbiente() {
+  if (process.env.TRUST_PROXY_HOPS !== undefined &&
+      !/^[1-9]\d*$/.test(process.env.TRUST_PROXY_HOPS))
+    throw new Error("TRUST_PROXY_HOPS deve ser um número inteiro positivo de proxies confiáveis, ou ficar ausente.");
   for (const chave of ["DB_HOST", "DB_USER", "DB_NAME", "JWT_SECRET"]) {
     if (!process.env[chave]?.trim())
       throw new Error("Configure " + chave + " em backend/.env.");

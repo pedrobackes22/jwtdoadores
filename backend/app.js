@@ -6,6 +6,13 @@ import authRoutes from "./routes/authRoutes.js";
 import alimentosRoutes from "./routes/alimentosRoutes.js";
 import solicitacoesRoutes from "./routes/solicitacoesRoutes.js";
 const app = express();
+// Configure apenas após confirmar a cadeia de proxies do provedor.
+if (process.env.TRUST_PROXY_HOPS) {
+  const hops = Number(process.env.TRUST_PROXY_HOPS);
+  if (!Number.isSafeInteger(hops) || hops < 1)
+    throw new Error("TRUST_PROXY_HOPS inválido.");
+  app.set("trust proxy", hops);
+}
 app.disable("x-powered-by");
 app.use(cors());
 app.use(express.json({ limit: "32kb" }));

@@ -1,5 +1,9 @@
+
 {
-  "cli": { "version": ">= 16.0.0", "appVersionSource": "local" },
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
   "build": {
     "preview": {
       "developmentClient": false,
@@ -9,12 +13,19 @@
         "ALIMENTA_API_PUBLICA": "1"
       },
       "distribution": "internal",
-      "android": { "buildType": "apk" }
+      "android": {
+        "buildType": "apk"
+      }
     },
     "production": {
       "environment": "production",
-      "env": { "ALIMENTA_APK": "1", "ALIMENTA_API_PUBLICA": "1" },
-      "android": { "buildType": "app-bundle" }
+      "env": {
+        "ALIMENTA_APK": "1",
+        "ALIMENTA_API_PUBLICA": "1"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
     }
   }
 }

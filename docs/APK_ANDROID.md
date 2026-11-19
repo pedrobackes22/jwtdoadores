@@ -7,7 +7,7 @@ Revisão: 16/11/2026. APK ainda não gerado. Nenhum commit ou push executado.
 - Cliente Expo/React Native: App.js, screens/, navigation/, components/, contexts/ e services/. O cliente HTTP usa EXPO_PUBLIC_API_URL e a sessão usa SecureStore no Android.
 - Servidor separado: backend/ (Express, autenticação JWT, rotas e conexão MySQL). Estrutura SQL em database/. O APK não inclui nem inicia o servidor ou o banco.
 - eas.json já continha preview com distribution=internal, android.buildType=apk e environment=preview. Foi acrescentado developmentClient=false para explicitar um aplicativo independente do Metro/Expo Go. Production permanece AAB.
-- app.json define br.com.alimentaplus.app. Falta vincular o projeto EAS (extra.eas.projectId); não foi inventado um identificador.
+- app.json define br.com.alimentaplus.app e contém extra.eas.projectId. Confirme que esse projeto pertence à conta EAS utilizada antes de compilar.
 - app.config.js já bloqueia builds sem URL adequada e exige HTTPS público nos perfis configurados. Nesse caso, também desabilita tráfego HTTP no Android.
 - .gitignore e .easignore já excluem arquivos de ambiente e credenciais. O arquivo de upload também exclui backend e SQL. Não colocar segredos em EXPO_PUBLIC_*: esses valores entram no APK.
 

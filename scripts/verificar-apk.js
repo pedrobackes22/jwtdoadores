@@ -10,6 +10,10 @@ try {
       "utf8",
     ),
   );
+  if (!process.env.EXPO_PUBLIC_API_URL && !eas.build.preview.env.EXPO_PUBLIC_API_URL)
+    throw new Error(
+      "Defina EXPO_PUBLIC_API_URL nesta sessão com a URL HTTPS real da API. O .env local não é usado por esta verificação nem enviado ao EAS; configure também a variável no ambiente preview do EAS.",
+    );
   const url = validarApiDispositivo(
     process.env.EXPO_PUBLIC_API_URL ||
       eas.build.preview.env.EXPO_PUBLIC_API_URL,
